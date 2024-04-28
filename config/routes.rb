@@ -1,10 +1,22 @@
 Rails.application.routes.draw do
+  get 'site/index'
   mount_devise_token_auth_for 'User', at: 'auth', controllers: {
     registrations: 'auth/registrations'
   }
 
+  root to: redirect('/events')
+
+  get 'events', to: 'site#index'
+  get 'events/new', to: 'site#index'
+  get 'events/:id', to: 'site#index'
+  get 'events/:id/edit', to: 'site#index'
+
   namespace :auth do
     resources :sessions, only: %i[index]
+  end
+
+  namespace :api do
+    resources :events, only: %i[index show create destroy update]
   end
   
   get 'app/index'
