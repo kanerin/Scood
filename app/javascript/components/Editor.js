@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import { Routes, Route, useNavigate} from 'react-router-dom';
 import Event from './Event';
 import Header from './Header';
 import EventList from './EventList';
@@ -12,10 +12,8 @@ const Editor = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const { identifier } = useParams();
 
   useEffect(() => {
-    console.log("Identifier:", identifier);
     const fetchData = async () => {
       try {
         const response = await window.fetch('/api/events');
@@ -29,7 +27,7 @@ const Editor = () => {
     };
 
     fetchData();
-  }, [identifier]);
+  }, []);
 
   const addEvent = async (newEvent) => {
     try {
