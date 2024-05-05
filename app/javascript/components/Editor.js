@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import Event from './Event';
 import Header from './Header';
 import EventList from './EventList';
@@ -12,8 +12,10 @@ const Editor = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { identifier } = useParams();
 
   useEffect(() => {
+    console.log("Identifier:", identifier);
     const fetchData = async () => {
       try {
         const response = await window.fetch('/api/events');
@@ -23,12 +25,11 @@ const Editor = () => {
       } catch (error) {
         handleAjaxError(error);
       }
-
       setIsLoading(false);
     };
 
     fetchData();
-  }, []);
+  }, [identifier]);
 
   const addEvent = async (newEvent) => {
     try {
@@ -112,14 +113,16 @@ const Editor = () => {
 
             <Routes>
                 <Route
-                    path=":id"
+                    path=":identifier"
                     element={<Event events={events} onDelete={deleteEvent} />}
                 />
                 <Route
-                    path=":id/edit"
+                    path=":identifier/edit"
                     element={<EventForm events={events} onSave={updateEvent} />}
                 />
-                <Route path="new" element={<EventForm onSave={addEvent} />} />
+                <Route path="new"
+                    element={<EventForm onSave={addEvent} />}
+                />
             </Routes>
           </>
         )}
@@ -127,35 +130,5 @@ const Editor = () => {
     </>
   );
 };
-
-const updateEvent = async (updatedEvent) => {
-  try {
-    const response = await window.fetch(
-      `/api/events/${updatedEvent.id}`,
-      {
-        method: 'PUT',
-        body: JSON.stringify(updatedEvent),
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    if (!response.ok) throw Error(response.statusText);
-
-    const newEvents = events;
-    const idx = newEvents.findIndex((event) => event.id === updatedEvent.id);
-    newEvents[idx] = updatedEvent;
-    setEvents(newEvents);
-
-    success('Event Updated!');
-    navigate(`/events/${updatedEvent.id}`);
-  } catch (error) {
-    handleAjaxError(error);
-  }
-};
-
-
 
 export default Editor;

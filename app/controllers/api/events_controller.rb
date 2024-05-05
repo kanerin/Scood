@@ -48,7 +48,8 @@ class Api::EventsController < ApplicationController
         :host,
         :published,
         :created_at,
-        :updated_at
+        :updated_at,
+        :url_hash
       )
     end
   end

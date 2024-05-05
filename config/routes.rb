@@ -8,8 +8,8 @@ Rails.application.routes.draw do
 
   get 'events', to: 'site#index'
   get 'events/new', to: 'site#index'
-  get 'events/:id', to: 'site#index'
-  get 'events/:id/edit', to: 'site#index'
+  get 'events/:identifier', to: 'site#index'
+  get 'events/:identifier/edit', to: 'site#index'
 
   namespace :auth do
     resources :sessions, only: %i[index]
