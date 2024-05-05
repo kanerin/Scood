@@ -10,9 +10,7 @@ namespace :db do
       # ユニークなハッシュが生成されるまでループする
       loop do
         # ランダムな8文字の16進数のハッシュを生成する
-        unique_hash = SecureRandom.hex(16)
-        # 生成したハッシュが数字のみからなるかどうかを確認
-        next unless unique_hash.match?(/\A\d+\z/)
+        unique_hash = SecureRandom.urlsafe_base64(16)
         # 生成したハッシュが既存のイベントのハッシュと重複しないかチェックする
         unless Event.exists?(url_hash: unique_hash)
           # 重複がない場合はイベントにハッシュをセットしてループを抜ける

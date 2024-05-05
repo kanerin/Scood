@@ -40,6 +40,4 @@ EventList.propTypes = {
   })).isRequired,
 };
 
-
-
 export default EventList;

@@ -8,6 +8,7 @@ import 'pikaday/css/pikaday.css';
 
 const EventForm = ({ events, onSave }) => {
   const { identifier } = useParams();
+  const isNewEvent = !identifier;
   let id;
 
   if (/^\d+$/.test(identifier)) {
@@ -27,10 +28,15 @@ const EventForm = ({ events, onSave }) => {
     published: false,
   }
 
+  // イベントの初期状態をセットする関数
+  const resetForm = () => {
+    setEvent(defaults);
+    setFormErrors({});
+  };
+
   const currEvent = id? events.find((e) => e.id === Number(id)) : {};
   const initialEventState = { ...defaults, ...currEvent }
   const [event, setEvent] = useState(initialEventState);
-
   const [formErrors, setFormErrors] = useState({});
 
   const dateInput = useRef(null);
@@ -95,7 +101,7 @@ const EventForm = ({ events, onSave }) => {
 
   return (
     <div>
-      <h2>New Event</h2>
+      <h2>{isNewEvent ? 'New Event' : 'Edit Event'}</h2>
       {renderErrors()}
   
       <form className="eventForm" onSubmit={handleSubmit}>
