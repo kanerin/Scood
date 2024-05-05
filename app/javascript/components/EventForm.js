@@ -7,7 +7,16 @@ import 'pikaday/css/pikaday.css';
 
 
 const EventForm = ({ events, onSave }) => {
-  const { id } = useParams();
+  const { identifier } = useParams();
+  let id;
+
+  if (/^\d+$/.test(identifier)) {
+    // identifierが数字のみで構成されている場合はidとして扱う
+    id = identifier;
+  } else {
+    // そうでない場合はurl_hashとして扱う
+    id = events.find((e) => e.url_hash === identifier)?.id;
+  }
 
   const defaults = {
     event_type: '',
@@ -63,8 +72,22 @@ const EventForm = ({ events, onSave }) => {
   };
 
   useEffect(() => {
-    setEvent(initialEventState);
-  }, [events]);
+    const p = new Pikaday({
+      field: dateInput.current,
+      onSelect: (date) => {
+        const formattedDate = formatDate(date);
+        updateEvent('event_date', formattedDate);
+      },
+    });
+  
+    // 初回のPikaday初期化時に、event_dateが存在する場合は日付をセット
+    if (event.event_date) {
+      p.setDate(new Date(event.event_date));
+    }
+  
+    // useEffectのクリーンアップ関数内でPikadayを破棄
+    return () => p.destroy();
+  }, [identifier]); // identifierが変更されたときに再度Pikadayを初期化
 
   const updateEvent = (key, value) => {
     setEvent((prevEvent) => ({ ...prevEvent, [key]: value }));
