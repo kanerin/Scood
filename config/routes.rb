@@ -1,4 +1,24 @@
 Rails.application.routes.draw do
+  get 'site/index'
+  mount_devise_token_auth_for 'User', at: 'auth', controllers: {
+    registrations: 'auth/registrations'
+  }
+
+  root to: redirect('/events')
+
+  get 'events', to: 'site#index'
+  get 'events/new', to: 'site#index'
+  get 'events/:identifier', to: 'site#index'
+  get 'events/:identifier/edit', to: 'site#index'
+
+  namespace :auth do
+    resources :sessions, only: %i[index]
+  end
+
+  namespace :api do
+    resources :events, only: %i[index show create destroy update]
+  end
+  
   get 'app/index'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -8,8 +28,4 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
-end
-
-Rails.application.routes.draw do
-  root to: 'app#index'
 end
