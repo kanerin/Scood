@@ -40,5 +40,6 @@ module Scood
       end
     end
 
+    onfig.hosts << 'Scood.onrender.com'
   end
 end
