@@ -22,6 +22,6 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
-bundle install
-npm install
-./bin/rails db:seed
+- bundle install
+- npm install
+- ./bin/rails db:seed
