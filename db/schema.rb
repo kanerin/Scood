@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_04_28_004552) do
+ActiveRecord::Schema[7.1].define(version: 2024_05_11_092654) do
   create_table "events", force: :cascade do |t|
     t.string "event_type"
     t.date "event_date"
@@ -20,6 +20,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_28_004552) do
     t.boolean "published"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "url_hash"
   end
 
   create_table "users", force: :cascade do |t|
