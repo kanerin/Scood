@@ -95,6 +95,12 @@ const EventForm = ({ events, onSave }) => {
     return () => p.destroy();
   }, [identifier]); // identifierが変更されたときに再度Pikadayを初期化
 
+  useEffect(() => {
+    if (isNewEvent) {
+      resetForm();
+    }
+  }, [isNewEvent]);
+
   const updateEvent = (key, value) => {
     setEvent((prevEvent) => ({ ...prevEvent, [key]: value }));
   };
