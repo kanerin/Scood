@@ -4,13 +4,13 @@
   "scripts": {
     "build": "esbuild app/javascript/*.* --bundle --sourcemap --outdir=app/assets/builds --loader:.js=jsx",
     "watch": "esbuild app/javascript/*.* --watch --bundle --outdir=app/assets/builds --loader:.js=jsx",
-
     "lint": "eslint src",
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo-rails": "^8.0.4",
+    "esbuild": "^0.21.1",
     "pikaday": "^1.8.2",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
