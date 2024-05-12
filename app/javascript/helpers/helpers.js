@@ -1,4 +1,4 @@
-import { error } from './notifications';
+import { error, success } from './notifications';
 
 export const isEmptyObject = obj => Object.keys(obj).length === 0;
 
@@ -39,4 +39,16 @@ export const formatDate = (d) => {
 export const handleAjaxError = (err) => {
     error('Something went wrong');
     console.error(err);
+};
+
+export const copyTextToClipboard = (text) => {
+  return navigator.clipboard.writeText(text)
+    .then(() => {
+      success('コピーしました!');
+      return true;
+    })
+    .catch(err => {
+      console.error('Failed to copy:', err);
+      return false;
+    });
 };

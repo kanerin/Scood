@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useParams, Link } from 'react-router-dom';
+import { copyTextToClipboard } from '../helpers/helpers';
 
 const Event = ({ events, onDelete }) => {
   const { identifier } = useParams();
@@ -48,11 +49,12 @@ const Event = ({ events, onDelete }) => {
         <li>
           <strong>Published:</strong> {event.published ? 'yes' : 'no'}
         </li>
-        <li>
-          <strong>URL:</strong>
+        <li className="url-container">
+          <strong>URL: </strong>
           <Link to={`/events/${event.url_hash}`}>
             {`http://localhost:3001/events/${event.url_hash}`}
           </Link>
+          <button className="copy-button" onClick={() => copyTextToClipboard(`http://localhost:3001/events/${event.url_hash}`)}>Copy</button>
         </li>
       </ul>
     </div>
