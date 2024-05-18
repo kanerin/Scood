@@ -27,4 +27,6 @@ Things you may want to cover:
 * ...
 - bundle install
 - npm install
-- ./bin/rails db:seed
+- rails db:migrate
+- rails db:seed
+- bin/dev
