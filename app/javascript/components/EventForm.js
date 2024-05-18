@@ -42,16 +42,20 @@ const EventForm = ({ events, onSave }) => {
       field: dateInput.current,
       onSelect: (date) => {
         const formattedDate = formatDate(date);
-        updateEvent('events_dates', [{ event_date: formattedDate }]);
+        updateEventDates(formattedDate);
       },
+      bound: false, // Prevent the picker from closing after selection
+      multiple: true,
+      format: 'YYYY-MM-DD',
     });
   
-    if (event.events_dates.length > 0 && event.events_dates[0].event_date) {
-      p.setDate(new Date(event.events_dates[0].event_date));
+    if (event.events_dates.length > 0) {
+      p.setDate(event.events_dates.map((d) => new Date(d.event_date)));
     }
   
     return () => p.destroy();
   }, [identifier]);
+  
 
   useEffect(() => {
     if (isNewEvent) {
@@ -93,32 +97,15 @@ const EventForm = ({ events, onSave }) => {
     }
   };
 
-  useEffect(() => {
-    const p = new Pikaday({
-      field: dateInput.current,
-      onSelect: (date) => {
-        const formattedDate = formatDate(date);
-        updateEvent('event_date', formattedDate);
-      },
-    });
-
-    // 初回のPikaday初期化時に、event_dateが存在する場合は日付をセット
-    if (event.event_date) {
-      p.setDate(new Date(event.event_date));
-    }
-
-    // useEffectのクリーンアップ関数内でPikadayを破棄
-    return () => p.destroy();
-  }, [identifier]); // identifierが変更されたときに再度Pikadayを初期化
-
-  useEffect(() => {
-    if (isNewEvent) {
-      resetForm();
-    }
-  }, [isNewEvent]);
-
   const updateEvent = (key, value) => {
     setEvent((prevEvent) => ({ ...prevEvent, [key]: value }));
+  };
+
+  const updateEventDates = (date) => {
+    setEvent((prevEvent) => {
+      const newDates = [...prevEvent.events_dates, { event_date: date }];
+      return { ...prevEvent, events_dates: newDates };
+    });
   };
 
   return (
@@ -141,13 +128,13 @@ const EventForm = ({ events, onSave }) => {
         </div>
         <div>
           <label htmlFor="event_date">
-            <strong>Date:</strong>
+            <strong>Dates:</strong>
             <input
               type="text"
               id="event_date"
               ref={dateInput}
               autoComplete="off"
-              value={event.events_dates[0] ? event.events_dates[0].event_date : ''}
+              value={event.events_dates.map((d) => d.event_date).join(', ')}
               onChange={() => {}} // No need to change from here as date is set via Pikaday
             />
           </label>
@@ -229,7 +216,7 @@ EventForm.propTypes = {
 };
 
 EventForm.defaultProps = {
-    events: [],
+  events: [],
 };
 
 export default EventForm;
