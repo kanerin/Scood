@@ -33,17 +33,19 @@ const Editor = () => {
     try {
       const response = await window.fetch('/api/events', {
         method: 'POST',
-        body: JSON.stringify(newEvent),
+        body: JSON.stringify({
+          ...newEvent,
+          events_dates: newEvent.events_dates.length > 0 ? newEvent.events_dates : [{ event_date: new Date().toISOString() }]
+        }),
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
       });
       if (!response.ok) throw Error(response.statusText);
-
+  
       const savedEvent = await response.json();
-      const newEvents = [...events, savedEvent];
-      setEvents(newEvents);
+      setEvents([...events, savedEvent]);
       success('Event Added!');
       navigate(`/events/${savedEvent.id}`);
     } catch (error) {

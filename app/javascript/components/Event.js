@@ -7,17 +7,18 @@ const Event = ({ events, onDelete }) => {
   let event;
 
   if (/^\d+$/.test(identifier)) {
-    // identifierが数字のみで構成されている場合はidとして扱う
     event = events.find((e) => e.id === Number(identifier));
   } else {
-    // そうでない場合はurl_hashとして扱う
     event = events.find((e) => e.url_hash === identifier);
   }
+
+  // events_datesが空かどうかを確認し、デフォルト値を設定する
+  const firstEventDate = event && event.events_dates.length > 0 ? event.events_dates[0].event_date : 'No Date Available';
   
   return (
     <div className="eventContainer">
       <h2>
-        {event.event_date}
+        {firstEventDate} {/* 安全に日程を表示 */}
         {' - '}
         {event.event_type}
         <Link to={`/events/${identifier}/edit`}>Edit</Link>
@@ -28,13 +29,16 @@ const Event = ({ events, onDelete }) => {
         >
             Delete
         </button>
-    </h2>
+      </h2>
       <ul>
         <li>
           <strong>Type:</strong> {event.event_type}
         </li>
         <li>
-          <strong>Date:</strong> {event.event_date}
+          <strong>Dates:</strong>
+          {event.events_dates.map((date, index) => (
+            <span key={index}>{date.event_date}, </span> // 安全に日程を列挙
+          ))}
         </li>
         <li>
           <strong>Title:</strong> {event.title}
@@ -64,7 +68,11 @@ Event.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       event_type: PropTypes.string.isRequired,
-      event_date: PropTypes.string.isRequired,
+      events_dates: PropTypes.arrayOf(
+        PropTypes.shape({
+          event_date: PropTypes.string.isRequired
+        })
+      ).isRequired,
       title: PropTypes.string.isRequired,
       speaker: PropTypes.string.isRequired,
       host: PropTypes.string.isRequired,
@@ -74,5 +82,4 @@ Event.propTypes = {
   ).isRequired,
   onDelete: PropTypes.func.isRequired,
 };
-
 export default Event;

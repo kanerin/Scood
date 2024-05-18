@@ -1,5 +1,7 @@
 class Event < ApplicationRecord
     before_create :generate_unique_url_hash
+    has_many :events_dates, dependent: :destroy
+    accepts_nested_attributes_for :events_dates
   
     private
   

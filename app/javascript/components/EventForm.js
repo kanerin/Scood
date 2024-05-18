@@ -5,47 +5,64 @@ import PropTypes from 'prop-types';
 import Pikaday from 'pikaday';
 import 'pikaday/css/pikaday.css';
 
-
 const EventForm = ({ events, onSave }) => {
   const { identifier } = useParams();
   const isNewEvent = !identifier;
-  let id;
 
+  let id;
   if (/^\d+$/.test(identifier)) {
-    // identifierが数字のみで構成されている場合はidとして扱う
     id = identifier;
   } else {
-    // そうでない場合はurl_hashとして扱う
     id = events.find((e) => e.url_hash === identifier)?.id;
   }
 
   const defaults = {
     event_type: '',
-    event_date: '',
+    events_dates: [],
     title: '',
     speaker: '',
     host: '',
     published: false,
-  }
+  };
 
-  // イベントの初期状態をセットする関数
   const resetForm = () => {
     setEvent(defaults);
     setFormErrors({});
   };
 
-  const currEvent = id? events.find((e) => e.id === Number(id)) : {};
-  const initialEventState = { ...defaults, ...currEvent }
+  const currEvent = id ? events.find((e) => e.id === Number(id)) : {};
+  const initialEventState = { ...defaults, ...currEvent };
   const [event, setEvent] = useState(initialEventState);
   const [formErrors, setFormErrors] = useState({});
 
   const dateInput = useRef(null);
 
+  useEffect(() => {
+    const p = new Pikaday({
+      field: dateInput.current,
+      onSelect: (date) => {
+        const formattedDate = formatDate(date);
+        updateEvent('events_dates', [{ event_date: formattedDate }]);
+      },
+    });
+  
+    if (event.events_dates.length > 0 && event.events_dates[0].event_date) {
+      p.setDate(new Date(event.events_dates[0].event_date));
+    }
+  
+    return () => p.destroy();
+  }, [identifier]);
+
+  useEffect(() => {
+    if (isNewEvent) {
+      resetForm();
+    }
+  }, [isNewEvent]);
+
   const handleInputChange = (e) => {
     const { target } = e;
     const { name } = target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
-  
     updateEvent(name, value);
   };
 
@@ -69,7 +86,6 @@ const EventForm = ({ events, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const errors = validateEvent(event);
-
     if (!isEmptyObject(errors)) {
       setFormErrors(errors);
     } else {
@@ -77,39 +93,11 @@ const EventForm = ({ events, onSave }) => {
     }
   };
 
-  useEffect(() => {
-    const p = new Pikaday({
-      field: dateInput.current,
-      onSelect: (date) => {
-        const formattedDate = formatDate(date);
-        updateEvent('event_date', formattedDate);
-      },
-    });
-  
-    // 初回のPikaday初期化時に、event_dateが存在する場合は日付をセット
-    if (event.event_date) {
-      p.setDate(new Date(event.event_date));
-    }
-  
-    // useEffectのクリーンアップ関数内でPikadayを破棄
-    return () => p.destroy();
-  }, [identifier]); // identifierが変更されたときに再度Pikadayを初期化
-
-  useEffect(() => {
-    if (isNewEvent) {
-      resetForm();
-    }
-  }, [isNewEvent]);
-
-  const updateEvent = (key, value) => {
-    setEvent((prevEvent) => ({ ...prevEvent, [key]: value }));
-  };
-
   return (
     <div>
       <h2>{isNewEvent ? 'New Event' : 'Edit Event'}</h2>
       {renderErrors()}
-  
+
       <form className="eventForm" onSubmit={handleSubmit}>
         <div>
           <label htmlFor="event_type">
@@ -129,11 +117,10 @@ const EventForm = ({ events, onSave }) => {
             <input
               type="text"
               id="event_date"
-              name="event_date"
               ref={dateInput}
               autoComplete="off"
-              value={event.event_date}
-              onChange={handleInputChange}
+              value={event.events_dates[0] ? event.events_dates[0].event_date : ''}
+              onChange={() => {}} // No need to change from here as date is set via Pikaday
             />
           </label>
         </div>
@@ -194,23 +181,27 @@ const EventForm = ({ events, onSave }) => {
   );
 };
 
-export default EventForm;
-
 EventForm.propTypes = {
-    events: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        event_type: PropTypes.string.isRequired,
-        event_date: PropTypes.string.isRequired,
-        title: PropTypes.string.isRequired,
-        speaker: PropTypes.string.isRequired,
-        host: PropTypes.string.isRequired,
-        published: PropTypes.bool.isRequired,
-      })
-    ),
-    onSave: PropTypes.func.isRequired,
+  events: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      event_type: PropTypes.string.isRequired,
+      events_dates: PropTypes.arrayOf(
+        PropTypes.shape({
+          event_date: PropTypes.string.isRequired
+        })
+      ).isRequired,
+      title: PropTypes.string.isRequired,
+      speaker: PropTypes.string.isRequired,
+      host: PropTypes.string.isRequired,
+      published: PropTypes.bool.isRequired,
+    })
+  ).isRequired,
+  onSave: PropTypes.func.isRequired,
 };
-  
+
 EventForm.defaultProps = {
     events: [],
 };
+
+export default EventForm;
