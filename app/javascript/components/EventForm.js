@@ -93,6 +93,34 @@ const EventForm = ({ events, onSave }) => {
     }
   };
 
+  useEffect(() => {
+    const p = new Pikaday({
+      field: dateInput.current,
+      onSelect: (date) => {
+        const formattedDate = formatDate(date);
+        updateEvent('event_date', formattedDate);
+      },
+    });
+
+    // 初回のPikaday初期化時に、event_dateが存在する場合は日付をセット
+    if (event.event_date) {
+      p.setDate(new Date(event.event_date));
+    }
+
+    // useEffectのクリーンアップ関数内でPikadayを破棄
+    return () => p.destroy();
+  }, [identifier]); // identifierが変更されたときに再度Pikadayを初期化
+
+  useEffect(() => {
+    if (isNewEvent) {
+      resetForm();
+    }
+  }, [isNewEvent]);
+
+  const updateEvent = (key, value) => {
+    setEvent((prevEvent) => ({ ...prevEvent, [key]: value }));
+  };
+
   return (
     <div>
       <h2>{isNewEvent ? 'New Event' : 'Edit Event'}</h2>
