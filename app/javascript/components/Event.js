@@ -38,7 +38,7 @@ const Event = ({ events, onDelete }) => {
         <li>
           <strong>Dates:</strong>
           {event.events_dates.map((date, index) => (
-            <span key={index}>{date.event_date}, </span> // 安全に日程を列挙
+            <span key={index}>{date.event_date} </span> // 安全に日程を列挙
           ))}
         </li>
         <li>
