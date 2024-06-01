@@ -13,6 +13,7 @@ const Event = ({ events, onDelete }) => {
     // そうでない場合はurl_hashとして扱う
     event = events.find((e) => e.url_hash === identifier);
   }
+  // pushするためにコメント追加
   
   return (
     <div className="eventContainer">
