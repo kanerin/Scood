@@ -13,14 +13,11 @@ const Event = ({ events, onDelete }) => {
     // そうでない場合はurl_hashとして扱う
     event = events.find((e) => e.url_hash === identifier);
   }
-  // pushするためにコメント追加
   
   return (
     <div className="eventContainer">
       <h2>
-        {event.event_date}
-        {' - '}
-        {event.event_type}
+        {event.title}
         <Link to={`/events/${identifier}/edit`}>Edit</Link>
         <button
             className="delete"
@@ -29,25 +26,13 @@ const Event = ({ events, onDelete }) => {
         >
             Delete
         </button>
-    </h2>
+      </h2>
       <ul>
-        <li>
-          <strong>Type:</strong> {event.event_type}
-        </li>
-        <li>
-          <strong>Date:</strong> {event.event_date}
-        </li>
         <li>
           <strong>Title:</strong> {event.title}
         </li>
         <li>
-          <strong>Speaker:</strong> {event.speaker}
-        </li>
-        <li>
-          <strong>Host:</strong> {event.host}
-        </li>
-        <li>
-          <strong>Published:</strong> {event.published ? 'yes' : 'no'}
+          <strong>Published:</strong> {event.published ? 'Yes' : 'No'}
         </li>
         <li>
           <strong>URL:</strong>
@@ -64,13 +49,11 @@ Event.propTypes = {
   events: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
-      event_type: PropTypes.string.isRequired,
-      event_date: PropTypes.string.isRequired,
       title: PropTypes.string.isRequired,
-      speaker: PropTypes.string.isRequired,
-      host: PropTypes.string.isRequired,
       published: PropTypes.bool.isRequired,
       url_hash: PropTypes.string.isRequired,
+      password: PropTypes.string, // パスワードは必須ではない可能性があるため、isRequiredを付けていません。
+      event_date_type: PropTypes.number // event_date_typeは整数型として定義
     })
   ).isRequired,
   onDelete: PropTypes.func.isRequired,

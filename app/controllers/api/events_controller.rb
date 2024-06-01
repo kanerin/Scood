@@ -21,6 +21,7 @@ class Api::EventsController < ApplicationController
     end
   
     def update
+      Rails.logger.debug("Event Params: #{params.inspect}")
       if @event.update(event_params)
         render json: @event, status: :ok
       else
@@ -44,12 +45,12 @@ class Api::EventsController < ApplicationController
         :event_type,
         :event_date,
         :title,
-        :speaker,
-        :host,
         :published,
         :created_at,
         :updated_at,
-        :url_hash
+        :url_hash,
+        :password,
+        :event_date_type
       )
     end
   end

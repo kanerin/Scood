@@ -1,6 +1,9 @@
 class Event < ApplicationRecord
     before_create :generate_unique_url_hash
-  
+    has_many :event_times
+    has_many :event_users
+    has_many :candidates, through: :event_users
+    
     private
   
     def generate_unique_url_hash
