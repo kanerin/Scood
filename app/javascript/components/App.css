@@ -139,7 +139,7 @@ body, html, div, blockquote, img, label, p, h1, h2, h3, h4, h5, h6, pre, ul, ol,
     font-weight: 0.9;
   }
   
-  button.delete {
+  button.delete, button.edit{
     background: none !important;
     border: none;
     padding: 0 !important;

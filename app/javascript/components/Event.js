@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useParams, Link } from 'react-router-dom';
 
-const Event = ({ events, onDelete }) => {
+const Event = ({ events, onDelete, history }) => {
   const { identifier } = useParams();
   let event;
 
@@ -13,18 +13,33 @@ const Event = ({ events, onDelete }) => {
     // そうでない場合はurl_hashとして扱う
     event = events.find((e) => e.url_hash === identifier);
   }
-  
+
+  const handleEdit = () => {
+    const password = prompt("パスワードを入力してください:");
+    if (password === event.password) {
+      history.push(`/events/${identifier}/edit`);
+    } else {
+      alert("パスワードが間違っています。");
+    }
+  };
+
   return (
     <div className="eventContainer">
       <h2>
         {event.title}
-        <Link to={`/events/${identifier}/edit`}>Edit</Link>
         <button
-            className="delete"
-            type="button"
-            onClick={() => onDelete(event.id)}
+          className="edit"
+          type="button"
+          onClick={handleEdit}
         >
-            Delete
+          Edit
+        </button>
+        <button
+          className="delete"
+          type="button"
+          onClick={() => onDelete(event.id)}
+        >
+          Delete
         </button>
       </h2>
       <ul>
