@@ -7,7 +7,6 @@ import EventForm from './EventForm';
 import { success } from '../helpers/notifications';
 import { handleAjaxError } from '../helpers/helpers';
 
-
 const Editor = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
