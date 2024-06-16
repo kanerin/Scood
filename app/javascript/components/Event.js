@@ -1,9 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 
-const Event = ({ events, onDelete, history }) => {
+const Event = ({ events, onDelete }) => {
   const { identifier } = useParams();
+  const navigate = useNavigate(); // Use useNavigate hook to get the navigate function
   let event;
 
   if (/^\d+$/.test(identifier)) {
@@ -17,7 +18,7 @@ const Event = ({ events, onDelete, history }) => {
   const handleEdit = () => {
     const password = prompt("パスワードを入力してください:");
     if (password === event.password) {
-      history.push(`/events/${identifier}/edit`);
+      navigate(`/events/${identifier}/edit`); // Use navigate function instead of history.push
     } else {
       alert("パスワードが間違っています。");
     }
