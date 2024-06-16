@@ -15,26 +15,11 @@ const Event = ({ events, onDelete }) => {
     event = events.find((e) => e.url_hash === identifier);
   }
 
-  const handleEdit = () => {
-    const password = prompt("パスワードを入力してください:");
-    if (password === event.password) {
-      navigate(`/events/${identifier}/edit`); // Use navigate function instead of history.push
-    } else {
-      alert("パスワードが間違っています。");
-    }
-  };
-
   return (
     <div className="eventContainer">
       <h2>
         {event.title}
-        <button
-          className="edit"
-          type="button"
-          onClick={handleEdit}
-        >
-          Edit
-        </button>
+        <Link to={`/events/${identifier}/edit`}>Edit</Link>
         <button
           className="delete"
           type="button"
