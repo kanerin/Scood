@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import Auth from './Auth';
 
 const Event = ({ events, onDelete }) => {
   const { identifier } = useParams();
-  const navigate = useNavigate(); // Use useNavigate hook to get the navigate function
+  const navigate = useNavigate();
+  const [showAuth, setShowAuth] = useState(false);
   let event;
 
   if (/^\d+$/.test(identifier)) {
@@ -16,47 +18,56 @@ const Event = ({ events, onDelete }) => {
   }
 
   const handleEdit = () => {
-    const password = prompt("パスワードを入力してください:");
-    if (password === event.password) {
-      navigate(`/events/${identifier}/edit`); // Use navigate function instead of history.push
-    } else {
-      alert("パスワードが間違っています。");
-    }
+    setShowAuth(true);
   };
+
+  const handleAuthSuccess = () => {
+    navigate(`/events/${identifier}/edit`);
+  };
+
+  if (!event) {
+    return <div>Event not found</div>;
+  }
 
   return (
     <div className="eventContainer">
-      <h2>
-        {event.title}
-        <button
-          className="edit"
-          type="button"
-          onClick={handleEdit}
-        >
-          Edit
-        </button>
-        <button
-          className="delete"
-          type="button"
-          onClick={() => onDelete(event.id)}
-        >
-          Delete
-        </button>
-      </h2>
-      <ul>
-        <li>
-          <strong>Title:</strong> {event.title}
-        </li>
-        <li>
-          <strong>Published:</strong> {event.published ? 'Yes' : 'No'}
-        </li>
-        <li>
-          <strong>URL:</strong>
-          <Link to={`/events/${event.url_hash}`}>
-            {`http://localhost:3001/events/${event.url_hash}`}
-          </Link>
-        </li>
-      </ul>
+      {showAuth ? (
+        <Auth event={event} onSuccess={handleAuthSuccess} />
+      ) : (
+        <>
+          <h2>
+            {event.title}
+            <button
+              className="edit"
+              type="button"
+              onClick={handleEdit}
+            >
+              Edit
+            </button>
+            <button
+              className="delete"
+              type="button"
+              onClick={() => onDelete(event.id)}
+            >
+              Delete
+            </button>
+          </h2>
+          <ul>
+            <li>
+              <strong>Title:</strong> {event.title}
+            </li>
+            <li>
+              <strong>Published:</strong> {event.published ? 'Yes' : 'No'}
+            </li>
+            <li>
+              <strong>URL:</strong>
+              <Link to={`/events/${event.url_hash}`}>
+                {`http://localhost:3001/events/${event.url_hash}`}
+              </Link>
+            </li>
+          </ul>
+        </>
+      )}
     </div>
   );
 };

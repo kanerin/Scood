@@ -192,3 +192,20 @@ body, html, div, blockquote, img, label, p, h1, h2, h3, h4, h5, h6, pre, ul, ol,
   }
 
   
+  /* styles.css または適切なCSSファイルに追加 */
+.authContainer {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.authContainer form {
+  display: flex;
+  flex-direction: column;
+}
+
+.authContainer form div {
+  margin-bottom: 10px;
+}

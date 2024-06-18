@@ -1,19 +1,43 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const Auth = ({ events }) => {
+const Auth = ({ event, onSuccess }) => {
   const [password, setPassword] = useState('');
+  const [isLocalStorageChecked, setIsLocalStorageChecked] = useState(false);
   const navigate = useNavigate();
-  const { identifier } = useParams();
 
-  if (/^\d+$/.test(identifier)) {
-    id = identifier;
-  } else {
-    id = events.find((e) => e.url_hash === identifier);
-  }
+  useEffect(() => {
+    const storedPassword = localStorage.getItem(event.id);
+    if (storedPassword) {
+      authenticateWithLocalStorage(storedPassword);
+    } else {
+      setIsLocalStorageChecked(true);
+    }
+  }, [event]);
 
-  const handleAuth = async () => {
-    const response = await fetch(`/events/${id}/auth`, {
+  const authenticateWithLocalStorage = async (storedPassword) => {
+    const response = await fetch(`/auth/${event.url_hash}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password: storedPassword }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      onSuccess();
+    } else {
+      setIsLocalStorageChecked(true);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const response = await fetch(`/auth/${event.url_hash}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -21,27 +45,48 @@ const Auth = ({ events }) => {
       body: JSON.stringify({ password }),
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem('authToken', data.token);
-      navigate(`/events/${id}/edit`);
+    const data = await response.json();
+
+    if (data.success) {
+      localStorage.setItem(event.id, password);
+      onSuccess();
     } else {
-      alert('パスワードが間違っています');
+      alert(data.message || 'Incorrect password');
     }
   };
 
   return (
-    <div>
-      <h2>イベント認証</h2>
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="パスワードを入力してください"
-      />
-      <button onClick={handleAuth}>認証</button>
+    <div className="authContainer">
+      <h2>Authenticate Event</h2>
+      {isLocalStorageChecked && (
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="password">
+              Password:
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+      )}
     </div>
   );
+};
+
+Auth.propTypes = {
+  event: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    published: PropTypes.bool.isRequired,
+    password: PropTypes.string.isRequired,
+    url_hash: PropTypes.string.isRequired,
+  }).isRequired,
+  onSuccess: PropTypes.func.isRequired,
 };
 
 export default Auth;
