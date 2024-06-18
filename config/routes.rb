@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   get 'about', to: 'pages#about'
 
   namespace :api do
-    resources :events, only: %i[index show create update destroy]
+    resources :events, only: %I[index show create update destroy]
   end
 
   get 'events', to: 'site#index'
@@ -11,6 +11,9 @@ Rails.application.routes.draw do
   get 'events/:identifier', to: 'site#index'
   get 'events/:identifier/edit', to: 'site#index'
 
+  get 'register/:identifier', to: 'register#new'
+  post 'register/:identifier', to: 'register#create'
+  
   resources :events
 
   get '/auth/:identifier', to: 'auth#new'
