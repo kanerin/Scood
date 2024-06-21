@@ -10,17 +10,52 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_05_11_092654) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_01_073557) do
+  create_table "candidates", force: :cascade do |t|
+    t.integer "event_id", null: false
+    t.integer "event_user_id", null: false
+    t.datetime "start_at", precision: nil, null: false
+    t.datetime "end_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_candidates_on_event_id"
+    t.index ["event_user_id"], name: "index_candidates_on_event_user_id"
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.text "message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "event_times", force: :cascade do |t|
+    t.integer "event_id", null: false
+    t.datetime "start_at", precision: nil, null: false
+    t.datetime "end_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_event_times_on_event_id"
+  end
+
+  create_table "event_users", force: :cascade do |t|
+    t.integer "event_id", null: false
+    t.string "name"
+    t.string "password"
+    t.integer "comment_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["comment_id"], name: "index_event_users_on_comment_id"
+    t.index ["event_id"], name: "index_event_users_on_event_id"
+  end
+
   create_table "events", force: :cascade do |t|
-    t.string "event_type"
-    t.date "event_date"
     t.text "title"
-    t.string "speaker"
-    t.string "host"
     t.boolean "published"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "url_hash"
+    t.string "password"
+    t.integer "event_date_type"
   end
 
   create_table "users", force: :cascade do |t|
@@ -48,4 +83,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_11_092654) do
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
   end
 
+  add_foreign_key "candidates", "event_users"
+  add_foreign_key "candidates", "events"
+  add_foreign_key "event_times", "events"
+  add_foreign_key "event_users", "comments"
+  add_foreign_key "event_users", "events"
 end
