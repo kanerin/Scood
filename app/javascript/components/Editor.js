@@ -9,6 +9,7 @@ import { handleAjaxError } from '../helpers/helpers';
 
 const Editor = () => {
   const [events, setEvents] = useState([]);
+  const [candidates, setCandidates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -27,6 +28,17 @@ const Editor = () => {
 
     fetchData();
   }, []);
+
+  const fetchCandidates = async (eventId) => {
+    try {
+      const response = await window.fetch(`/api/events/${eventId}`);
+      if (!response.ok) throw Error(response.statusText);
+      const data = await response.json();
+      setCandidates(data.candidates);
+    } catch (error) {
+      handleAjaxError(error);
+    }
+  };
 
   const addEvent = async (newEvent) => {
     try {
@@ -109,20 +121,27 @@ const Editor = () => {
             <EventList events={events} />
 
             <Routes>
-                <Route
-                    path=":identifier"
-                    element={<Event events={events} onDelete={deleteEvent} />}
-                />
-                <Route
-                    path=":identifier/edit"
-                    element={<EventForm events={events} onSave={updateEvent} />}
-                />
-                <Route path="new"
-                    element={<EventForm onSave={addEvent} />}
-                />
-                <Route path=""
-                    element={<EventForm onSave={addEvent} />}
-                />
+              <Route
+                path=":identifier"
+                element={
+                  <Event
+                    events={events}
+                    onDelete={deleteEvent}
+                    fetchCandidates={fetchCandidates}
+                    candidates={candidates}
+                  />
+                }
+              />
+              <Route
+                path=":identifier/edit"
+                element={<EventForm events={events} onSave={updateEvent} />}
+              />
+              <Route path="new"
+                element={<EventForm onSave={addEvent} />}
+              />
+              <Route path=""
+                element={<EventForm onSave={addEvent} />}
+              />
             </Routes>
           </>
         )}
