@@ -6,21 +6,7 @@ class Api::EventsController < ApplicationController
 
   def show
     @event = Event.find(params[:id])
-    @candidates = @event.candidates.includes(event_user: :comment)
-    render json: {
-      event: @event,
-      candidates: @candidates.map do |candidate|
-        {
-          id: candidate.id,
-          start_at: candidate.start_at,
-          end_at: candidate.end_at,
-          event_user: {
-            name: candidate.event_user.name,
-            comment: candidate.event_user.comment&.message
-          }
-        }
-      end
-    }
+    render json: @event
   end
 
   def create
