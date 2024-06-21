@@ -7,6 +7,8 @@ const Event = ({ events, onDelete }) => {
   const { identifier } = useParams();
   const navigate = useNavigate();
   const [showAuth, setShowAuth] = useState(false);
+  const [eventDetails, setEventDetails] = useState(null);
+  const [candidates, setCandidates] = useState([]);
   let event;
 
   if (/^\d+$/.test(identifier)) {
@@ -17,6 +19,28 @@ const Event = ({ events, onDelete }) => {
     event = events.find((e) => e.url_hash === identifier);
   }
 
+  useEffect(() => {
+    const fetchEventDetails = async () => {
+      const event = /^\d+$/.test(identifier)
+        ? events.find((e) => e.id === Number(identifier))
+        : events.find((e) => e.url_hash === identifier);
+
+      if (event) {
+        try {
+          const response = await fetch(`/api/events/${event.id}`);
+          if (!response.ok) throw new Error('Failed to fetch event details');
+          const data = await response.json();
+          setEventDetails(data.event);
+          setCandidates(data.candidates);
+        } catch (error) {
+          console.error('Error fetching event details:', error);
+        }
+      }
+    };
+
+    fetchEventDetails();
+  }, [identifier, events]);
+
   const handleEdit = () => {
     setShowAuth(true);
   };
@@ -25,7 +49,11 @@ const Event = ({ events, onDelete }) => {
     navigate(`/events/${identifier}/edit`);
   };
 
-  if (!event) {
+  const handleRegister = () => {
+    navigate(`/register/${identifier}`);
+  };
+
+  if (!eventDetails) {
     return <div>Event not found</div>;
   }
 
@@ -36,7 +64,7 @@ const Event = ({ events, onDelete }) => {
       ) : (
         <>
           <h2>
-            {event.title}
+            {eventDetails.title}
             <button
               className="edit"
               type="button"
@@ -47,24 +75,41 @@ const Event = ({ events, onDelete }) => {
             <button
               className="delete"
               type="button"
-              onClick={() => onDelete(event.id)}
+              onClick={() => onDelete(eventDetails.id)}
             >
               Delete
+            </button>
+            <button
+              className="register"
+              type="button"
+              onClick={handleRegister}
+            >
+              Register
             </button>
           </h2>
           <ul>
             <li>
-              <strong>Title:</strong> {event.title}
+              <strong>Title:</strong> {eventDetails.title}
             </li>
             <li>
-              <strong>Published:</strong> {event.published ? 'Yes' : 'No'}
+              <strong>Published:</strong> {eventDetails.published ? 'Yes' : 'No'}
             </li>
             <li>
               <strong>URL:</strong>
-              <Link to={`/events/${event.url_hash}`}>
-                {`http://localhost:3001/events/${event.url_hash}`}
+              <Link to={`/events/${eventDetails.url_hash}`}>
+                {`http://localhost:3001/events/${eventDetails.url_hash}`}
               </Link>
             </li>
+          </ul>
+          <h3>回答内容:</h3>
+          <ul>
+            {candidates.map((candidate) => (
+              <li key={candidate.id}>
+                <p>名前: {candidate.event_user.name}</p>
+                <p>開始時間: {new Date(candidate.start_at).toLocaleString()}</p>
+                <p>終了時間: {new Date(candidate.end_at).toLocaleString()}</p>
+              </li>
+            ))}
           </ul>
         </>
       )}
@@ -79,8 +124,8 @@ Event.propTypes = {
       title: PropTypes.string.isRequired,
       published: PropTypes.bool.isRequired,
       url_hash: PropTypes.string.isRequired,
-      password: PropTypes.string, // パスワードは必須ではない可能性があるため、isRequiredを付けていません。
-      event_date_type: PropTypes.number // event_date_typeは整数型として定義
+      password: PropTypes.string,
+      event_date_type: PropTypes.number
     })
   ).isRequired,
   onDelete: PropTypes.func.isRequired,

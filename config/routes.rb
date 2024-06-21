@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get 'register/new'
+  get 'register/create'
   root 'pages#index'
   get 'about', to: 'pages#about'
 
@@ -10,6 +12,9 @@ Rails.application.routes.draw do
   get 'events/new', to: 'site#index'
   get 'events/:identifier', to: 'site#index'
   get 'events/:identifier/edit', to: 'site#index'
+
+  get 'register/:identifier', to: 'register#new'
+  post 'register/:identifier', to: 'register#create'
 
   resources :events
 
