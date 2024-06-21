@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { formatDate, isEmptyObject, validateEvent } from '../helpers/helpers';
 import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import './EventForm.css'; 
 import Pikaday from 'pikaday';
 import 'pikaday/css/pikaday.css';
-
 
 const EventForm = ({ events, onSave }) => {
   const { identifier } = useParams();
@@ -12,41 +12,34 @@ const EventForm = ({ events, onSave }) => {
   let id;
 
   if (/^\d+$/.test(identifier)) {
-    // identifierが数字のみで構成されている場合はidとして扱う
     id = identifier;
   } else {
-    // そうでない場合はurl_hashとして扱う
     id = events.find((e) => e.url_hash === identifier)?.id;
   }
 
   const defaults = {
-    event_type: '',
-    event_date: '',
     title: '',
-    speaker: '',
-    host: '',
     published: false,
+    password: '',
+    event_date_type: 0,  // デフォルト値を設定
   }
 
-  // イベントの初期状態をセットする関数
   const resetForm = () => {
     setEvent(defaults);
     setFormErrors({});
   };
 
-  const currEvent = id? events.find((e) => e.id === Number(id)) : {};
+  const currEvent = id ? events.find((e) => e.id === Number(id)) : {};
   const initialEventState = { ...defaults, ...currEvent }
+  initialEventState.event_date_type = Number(initialEventState.event_date_type); // 数値として扱う
   const [event, setEvent] = useState(initialEventState);
   const [formErrors, setFormErrors] = useState({});
 
-  const dateInput = useRef(null);
-
   const handleInputChange = (e) => {
     const { target } = e;
-    const { name } = target;
-    const value = target.type === 'checkbox' ? target.checked : target.value;
-  
-    updateEvent(name, value);
+    const { name, value, type } = target;
+    const newValue = type === 'checkbox' ? target.checked : (type === 'radio' ? parseInt(value, 10) : value);
+    updateEvent(name, newValue);
   };
 
   const renderErrors = () => {
@@ -78,24 +71,6 @@ const EventForm = ({ events, onSave }) => {
   };
 
   useEffect(() => {
-    const p = new Pikaday({
-      field: dateInput.current,
-      onSelect: (date) => {
-        const formattedDate = formatDate(date);
-        updateEvent('event_date', formattedDate);
-      },
-    });
-  
-    // 初回のPikaday初期化時に、event_dateが存在する場合は日付をセット
-    if (event.event_date) {
-      p.setDate(new Date(event.event_date));
-    }
-  
-    // useEffectのクリーンアップ関数内でPikadayを破棄
-    return () => p.destroy();
-  }, [identifier]); // identifierが変更されたときに再度Pikadayを初期化
-
-  useEffect(() => {
     if (isNewEvent) {
       resetForm();
     }
@@ -112,65 +87,14 @@ const EventForm = ({ events, onSave }) => {
   
       <form className="eventForm" onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="event_type">
-            <strong>Type:</strong>
-            <input
-              type="text"
-              id="event_type"
-              name="event_type"
-              onChange={handleInputChange}
-              value={event.event_type}
-            />
-          </label>
-        </div>
-        <div>
-          <label htmlFor="event_date">
-            <strong>Date:</strong>
-            <input
-              type="text"
-              id="event_date"
-              name="event_date"
-              ref={dateInput}
-              autoComplete="off"
-              value={event.event_date}
-              onChange={handleInputChange}
-            />
-          </label>
-        </div>
-        <div>
           <label htmlFor="title">
             <strong>Title:</strong>
-            <textarea
-              cols="30"
-              rows="10"
+            <input
+              type="text"
               id="title"
               name="title"
               onChange={handleInputChange}
               value={event.title}
-            />
-          </label>
-        </div>
-        <div>
-          <label htmlFor="speaker">
-            <strong>Speakers:</strong>
-            <input
-              type="text"
-              id="speaker"
-              name="speaker"
-              onChange={handleInputChange}
-              value={event.speaker}
-            />
-          </label>
-        </div>
-        <div>
-          <label htmlFor="host">
-            <strong>Hosts:</strong>
-            <input
-              type="text"
-              id="host"
-              name="host"
-              onChange={handleInputChange}
-              value={event.host}
             />
           </label>
         </div>
@@ -184,6 +108,48 @@ const EventForm = ({ events, onSave }) => {
               onChange={handleInputChange}
               checked={event.published}
             />
+          </label>
+        </div>
+        <div>
+          <label htmlFor="password">
+            <strong>Password:</strong>
+            <input
+              type="text"
+              id="password"
+              name="password"
+              onChange={handleInputChange}
+              value={event.password}
+            />
+          </label>
+        </div>
+        <div>
+          <strong>Date Type:</strong>
+          <label>
+            <input
+              type="radio"
+              name="event_date_type"
+              value="0"
+              checked={event.event_date_type === 0}
+              onChange={handleInputChange}
+            /> 15分
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="event_date_type"
+              value="1"
+              checked={event.event_date_type === 1}
+              onChange={handleInputChange}
+            /> 1時間
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="event_date_type"
+              value="2"
+              checked={event.event_date_type === 2}
+              onChange={handleInputChange}
+            /> 1日
           </label>
         </div>
         <div className="form-actions">
@@ -200,17 +166,15 @@ EventForm.propTypes = {
     events: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.number.isRequired,
-        event_type: PropTypes.string.isRequired,
-        event_date: PropTypes.string.isRequired,
         title: PropTypes.string.isRequired,
-        speaker: PropTypes.string.isRequired,
-        host: PropTypes.string.isRequired,
         published: PropTypes.bool.isRequired,
+        password: PropTypes.string,
+        event_date_type: PropTypes.number,
       })
     ),
     onSave: PropTypes.func.isRequired,
 };
-  
+
 EventForm.defaultProps = {
     events: [],
 };

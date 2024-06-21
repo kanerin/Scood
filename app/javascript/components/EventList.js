@@ -4,14 +4,11 @@ import { Link, NavLink } from 'react-router-dom';
 
 const EventList = ({ events }) => {
     const renderEvents = (eventArray) => {
-        eventArray.sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
-    
+        // イベントのソート方法を変更する必要がある場合はここを修正
         return eventArray.map((event) => (
           <li key={event.id}>
-            <NavLink to={`/events/${event.id}`}>
-              {event.event_date}
-              {' - '}
-              {event.event_type}
+            <NavLink to={`/events/${event.url_hash}`}>
+              {event.title}
             </NavLink>
           </li>
         ));
@@ -30,13 +27,12 @@ const EventList = ({ events }) => {
 
 EventList.propTypes = {
   events: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.number,
-    event_type: PropTypes.string,
-    event_date: PropTypes.string,
-    title: PropTypes.string,
-    speaker: PropTypes.string,
-    host: PropTypes.string,
-    published: PropTypes.bool,
+    id: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    published: PropTypes.bool.isRequired,
+    url_hash: PropTypes.string.isRequired,
+    password: PropTypes.string,
+    event_date_type: PropTypes.number
   })).isRequired,
 };
 

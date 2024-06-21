@@ -1,31 +1,23 @@
 Rails.application.routes.draw do
-  get 'site/index'
-  mount_devise_token_auth_for 'User', at: 'auth', controllers: {
-    registrations: 'auth/registrations'
-  }
+  get 'register/new'
+  get 'register/create'
+  root 'pages#index'
+  get 'about', to: 'pages#about'
 
-  root to: redirect('/events')
+  namespace :api do
+    resources :events, only: %i[index show create update destroy]
+  end
 
   get 'events', to: 'site#index'
   get 'events/new', to: 'site#index'
   get 'events/:identifier', to: 'site#index'
   get 'events/:identifier/edit', to: 'site#index'
 
-  namespace :auth do
-    resources :sessions, only: %i[index]
-  end
+  get 'register/:identifier', to: 'register#new'
+  post 'register/:identifier', to: 'register#create'
 
-  namespace :api do
-    resources :events, only: %i[index show create destroy update]
-  end
-  
-  get 'app/index'
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  resources :events
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
-
-  # Defines the root path route ("/")
-  # root "posts#index"
+  get '/auth/:identifier', to: 'auth#new'
+  post '/auth/:identifier', to: 'auth#create'
 end
