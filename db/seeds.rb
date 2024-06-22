@@ -1,14 +1,39 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# db/seeds.rb
 
-json = ActiveSupport::JSON.decode(File.read('db/seeds/events.json'))
-json.each do |record|
-  Event.create!(record)
-end
+# 既存データの削除
+Event.destroy_all
+Event.destroy_all
+EventTime.destroy_all
+EventUser.destroy_all
+Candidate.destroy_all
+Comment.destroy_all
+
+# イベントデータのシード
+Event.create!([
+  { title: 'Event 1', event_date_type: 1, password: 'password1' },
+  { title: 'Event 2', event_date_type: 2, password: 'password2' }
+])
+
+# イベント時間のシード
+EventTime.create!([
+  { event_id: 1, start_at: '2024-06-01 10:00:00', end_at: '2024-06-01 12:00:00' },
+  { event_id: 2, start_at: '2024-07-01 14:00:00', end_at: '2024-07-01 16:00:00' }
+])
+
+# イベントユーザーのシード
+EventUser.create!([
+  { event_id: 1, name: 'User1', password: 'password' },
+  { event_id: 2, name: 'User2', password: 'password' }
+])
+
+# 候補者のシード
+Candidate.create!([
+  { event_id: 1, event_user_id: 1, start_at: '2024-06-01 10:00:00', end_at: '2024-06-01 12:00:00' },
+  { event_id: 2, event_user_id: 2, start_at: '2024-07-01 14:00:00', end_at: '2024-07-01 16:00:00' }
+])
+
+# コメントのシード
+Comment.create!([
+  { message: 'This is a comment for event 1.' },
+  { message: 'This is a comment for event 2.' }
+])
