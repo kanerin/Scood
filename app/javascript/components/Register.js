@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const Register = ({ events }) => {
@@ -6,13 +6,36 @@ const Register = ({ events }) => {
   const event = /^\d+$/.test(identifier)
     ? events.find((e) => e.id === Number(identifier))
     : events.find((e) => e.url_hash === identifier);
+
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [comment, setComment] = useState('');
-  const [startAt, setStartAt] = useState('');
-  const [endAt, setEndAt] = useState('');
+  const [selectedTimes, setSelectedTimes] = useState([]);
   const [message, setMessage] = useState('');
+  const [eventTimes, setEventTimes] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchEventTimes = async () => {
+      if (event) {
+        const response = await fetch(`/api/events/${event.id}/event_times`);
+        const data = await response.json();
+        setEventTimes(data);
+      }
+    };
+
+    fetchEventTimes();
+  }, [event]);
+
+  const handleCheckboxChange = (timeId) => {
+    setSelectedTimes((prevSelectedTimes) => {
+      if (prevSelectedTimes.includes(timeId)) {
+        return prevSelectedTimes.filter((id) => id !== timeId);
+      } else {
+        return [...prevSelectedTimes, timeId];
+      }
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,8 +49,7 @@ const Register = ({ events }) => {
         name,
         password,
         comment,
-        start_at: startAt,
-        end_at: endAt,
+        event_time_ids: selectedTimes,
       }),
     });
 
@@ -76,22 +98,20 @@ const Register = ({ events }) => {
           />
         </div>
         <div>
-          <label htmlFor="startAt">Start At:</label>
-          <input
-            type="datetime-local"
-            id="startAt"
-            value={startAt}
-            onChange={(e) => setStartAt(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="endAt">End At:</label>
-          <input
-            type="datetime-local"
-            id="endAt"
-            value={endAt}
-            onChange={(e) => setEndAt(e.target.value)}
-          />
+          <strong>Select Event Times:</strong>
+          {eventTimes.map((time) => (
+            <div key={time.id}>
+              <label>
+                <input
+                  type="checkbox"
+                  value={time.id}
+                  checked={selectedTimes.includes(time.id)}
+                  onChange={() => handleCheckboxChange(time.id)}
+                />
+                {new Date(time.start_at).toLocaleString()} - {new Date(time.end_at).toLocaleString()}
+              </label>
+            </div>
+          ))}
         </div>
         <button type="submit">Register</button>
       </form>

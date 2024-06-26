@@ -1,10 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { formatDate, isEmptyObject, validateEvent } from '../helpers/helpers';
+import React, { useState, useEffect } from 'react';
+import { isEmptyObject, validateEvent } from '../helpers/helpers';
 import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import './EventForm.css'; 
-import Pikaday from 'pikaday';
+import './EventForm.css';
 import 'pikaday/css/pikaday.css';
+
+// Helper function to format the date-time strings
+const formatDateTime = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';  // Invalid date
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
 
 const EventForm = ({ events, onSave }) => {
   const { identifier } = useParams();
@@ -21,8 +33,9 @@ const EventForm = ({ events, onSave }) => {
     title: '',
     published: false,
     password: '',
-    event_date_type: 0,  // デフォルト値を設定
-  }
+    event_date_type: 0,
+    event_times: [{ start_at: '', end_at: '' }]
+  };
 
   const resetForm = () => {
     setEvent(defaults);
@@ -30,8 +43,15 @@ const EventForm = ({ events, onSave }) => {
   };
 
   const currEvent = id ? events.find((e) => e.id === Number(id)) : {};
-  const initialEventState = { ...defaults, ...currEvent }
-  initialEventState.event_date_type = Number(initialEventState.event_date_type); // 数値として扱う
+  const initialEventState = {
+    ...defaults,
+    ...currEvent,
+    event_times: (currEvent.event_times || [{ start_at: '', end_at: '' }]).map((time) => ({
+      start_at: formatDateTime(time.start_at),
+      end_at: formatDateTime(time.end_at)
+    }))
+  };
+  initialEventState.event_date_type = Number(initialEventState.event_date_type);
   const [event, setEvent] = useState(initialEventState);
   const [formErrors, setFormErrors] = useState({});
 
@@ -40,6 +60,26 @@ const EventForm = ({ events, onSave }) => {
     const { name, value, type } = target;
     const newValue = type === 'checkbox' ? target.checked : (type === 'radio' ? parseInt(value, 10) : value);
     updateEvent(name, newValue);
+  };
+
+  const handleEventTimeChange = (index, field, value) => {
+    const newEventTimes = event.event_times.map((time, i) => {
+      if (i === index) {
+        return { ...time, [field]: value };
+      }
+      return time;
+    });
+    updateEvent('event_times', newEventTimes);
+  };
+
+  const addEventTime = () => {
+    const newEventTimes = [...event.event_times, { start_at: '', end_at: '' }];
+    updateEvent('event_times', newEventTimes);
+  };
+
+  const removeEventTime = (index) => {
+    const newEventTimes = event.event_times.filter((_, i) => i !== index);
+    updateEvent('event_times', newEventTimes);
   };
 
   const renderErrors = () => {
@@ -73,8 +113,29 @@ const EventForm = ({ events, onSave }) => {
   useEffect(() => {
     if (isNewEvent) {
       resetForm();
+    } else {
+      fetch(`/api/events/${id}/event_times`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Fetched event_times:', data);  // Debugging line
+          setEvent((prevEvent) => ({
+            ...prevEvent,
+            event_times: data.map((time) => ({
+              start_at: formatDateTime(time.start_at),
+              end_at: formatDateTime(time.end_at)
+            }))
+          }));
+        })
+        .catch((error) => console.error('Error fetching event times:', error));
     }
-  }, [isNewEvent]);
+  }, [isNewEvent, id]);
+
+  useEffect(() => {
+    console.log('Event:', event);
+    event.event_times.forEach((time, index) => {
+      console.log(`Event Time ${index + 1} - Start: ${time.start_at}, End: ${time.end_at}`);
+    });
+  }, [event]);
 
   const updateEvent = (key, value) => {
     setEvent((prevEvent) => ({ ...prevEvent, [key]: value }));
@@ -84,7 +145,7 @@ const EventForm = ({ events, onSave }) => {
     <div>
       <h2>{isNewEvent ? 'New Event' : 'Edit Event'}</h2>
       {renderErrors()}
-  
+
       <form className="eventForm" onSubmit={handleSubmit}>
         <div>
           <label htmlFor="title">
@@ -152,6 +213,35 @@ const EventForm = ({ events, onSave }) => {
             /> 1日
           </label>
         </div>
+        <div>
+          <strong>Event Times:</strong>
+          {event.event_times.map((time, index) => (
+            <div key={index}>
+              <label>
+                Start At:
+                <input
+                  type="datetime-local"
+                  value={time.start_at}
+                  onChange={(e) => handleEventTimeChange(index, 'start_at', e.target.value)}
+                />
+              </label>
+              <label>
+                End At:
+                <input
+                  type="datetime-local"
+                  value={time.end_at}
+                  onChange={(e) => handleEventTimeChange(index, 'end_at', e.target.value)}
+                />
+              </label>
+              <button type="button" onClick={() => removeEventTime(index)}>
+                Remove
+              </button>
+            </div>
+          ))}
+          <button type="button" onClick={addEventTime}>
+            Add Event Time
+          </button>
+        </div>
         <div className="form-actions">
           <button type="submit">Save</button>
         </div>
@@ -163,18 +253,24 @@ const EventForm = ({ events, onSave }) => {
 export default EventForm;
 
 EventForm.propTypes = {
-    events: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        title: PropTypes.string.isRequired,
-        published: PropTypes.bool.isRequired,
-        password: PropTypes.string,
-        event_date_type: PropTypes.number,
-      })
-    ),
-    onSave: PropTypes.func.isRequired,
+  events: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      title: PropTypes.string.isRequired,
+      published: PropTypes.bool.isRequired,
+      password: PropTypes.string,
+      event_date_type: PropTypes.number,
+      event_times: PropTypes.arrayOf(
+        PropTypes.shape({
+          start_at: PropTypes.string,
+          end_at: PropTypes.string,
+        })
+      ),
+    })
+  ),
+  onSave: PropTypes.func.isRequired,
 };
 
 EventForm.defaultProps = {
-    events: [],
+events: [],
 };

@@ -9,25 +9,23 @@ const Event = ({ events, onDelete }) => {
   const [showAuth, setShowAuth] = useState(false);
   const [eventDetails, setEventDetails] = useState(null);
   const [candidates, setCandidates] = useState([]);
-  let event;
+  const [currentEvent, setCurrentEvent] = useState(null);
 
-  if (/^\d+$/.test(identifier)) {
-    // identifierが数字のみで構成されている場合はidとして扱う
-    event = events.find((e) => e.id === Number(identifier));
-  } else {
-    // そうでない場合はurl_hashとして扱う
-    event = events.find((e) => e.url_hash === identifier);
-  }
+  useEffect(() => {
+    let event;
+    if (/^\d+$/.test(identifier)) {
+      event = events.find((e) => e.id === Number(identifier));
+    } else {
+      event = events.find((e) => e.url_hash === identifier);
+    }
+    setCurrentEvent(event);
+  }, [identifier, events]);
 
   useEffect(() => {
     const fetchEventDetails = async () => {
-      const event = /^\d+$/.test(identifier)
-        ? events.find((e) => e.id === Number(identifier))
-        : events.find((e) => e.url_hash === identifier);
-
-      if (event) {
+      if (currentEvent) {
         try {
-          const response = await fetch(`/api/events/${event.id}`);
+          const response = await fetch(`/api/events/${currentEvent.id}`);
           if (!response.ok) throw new Error('Failed to fetch event details');
           const data = await response.json();
           setEventDetails(data.event);
@@ -39,7 +37,7 @@ const Event = ({ events, onDelete }) => {
     };
 
     fetchEventDetails();
-  }, [identifier, events]);
+  }, [currentEvent]);
 
   const handleEdit = () => {
     setShowAuth(true);
@@ -53,18 +51,18 @@ const Event = ({ events, onDelete }) => {
     navigate(`/register/${identifier}`);
   };
 
-  if (!eventDetails) {
+  if (!currentEvent) {
     return <div>Event not found</div>;
   }
 
   return (
     <div className="eventContainer">
       {showAuth ? (
-        <Auth event={event} onSuccess={handleAuthSuccess} />
+        <Auth event={currentEvent} onSuccess={handleAuthSuccess} />
       ) : (
         <>
           <h2>
-            {eventDetails.title}
+            {eventDetails ? eventDetails.title : 'Loading...'}
             <button
               className="edit"
               type="button"
@@ -87,20 +85,22 @@ const Event = ({ events, onDelete }) => {
               Register
             </button>
           </h2>
-          <ul>
-            <li>
-              <strong>Title:</strong> {eventDetails.title}
-            </li>
-            <li>
-              <strong>Published:</strong> {eventDetails.published ? 'Yes' : 'No'}
-            </li>
-            <li>
-              <strong>URL:</strong>
-              <Link to={`/events/${eventDetails.url_hash}`}>
-                {`http://localhost:3001/events/${eventDetails.url_hash}`}
-              </Link>
-            </li>
-          </ul>
+          {eventDetails && (
+            <ul>
+              <li>
+                <strong>Title:</strong> {eventDetails.title}
+              </li>
+              <li>
+                <strong>Published:</strong> {eventDetails.published ? 'Yes' : 'No'}
+              </li>
+              <li>
+                <strong>URL:</strong>
+                <Link to={`/events/${eventDetails.url_hash}`}>
+                  {`http://localhost:3001/events/${eventDetails.url_hash}`}
+                </Link>
+              </li>
+            </ul>
+          )}
           <h3>回答内容:</h3>
           <ul>
             {candidates.map((candidate) => (
