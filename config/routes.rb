@@ -5,7 +5,11 @@ Rails.application.routes.draw do
   get 'about', to: 'pages#about'
 
   namespace :api do
-    resources :events, only: %i[index show create update destroy]
+    resources :events, only: %i[index show create update destroy] do
+      member do
+        get :event_times
+      end
+    end
   end
 
   get 'events', to: 'site#index'
